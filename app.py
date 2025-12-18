@@ -2,9 +2,14 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+# Railway-compatible health check
 @app.route("/", methods=["GET"])
+def root():
+    return "OK", 200
+
+@app.route("/health", methods=["GET"])
 def health():
-    return "TaxLabs backend is running", 200
+    return jsonify(status="ok"), 200
 
 @app.route("/upload", methods=["POST"])
 def upload():
