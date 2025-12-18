@@ -1,6 +1,6 @@
 from flask import Flask, request, send_file, jsonify, Response
-import os
-import uuid
+import os, uuid, smtplib
+from email.message import EmailMessage
 
 from report_html import generate_report
 from report_pdf import generate_pdf
@@ -19,54 +19,54 @@ def health():
     return "TaxLabs backend is running"
 
 
+def send_email(to_email, pdf_path):
+    msg = EmailMessage()
+    msg["Subject"] = "Your TaxLabs Crypto Tax Report"
+    msg["From"] = os.environ["EMAIL_USER"]
+    msg["To"] = to_email
+
+    msg.set_content("Attached is your TaxLabs crypto tax summary PDF.")
+
+    with open(pdf_path, "rb") as f:
+        msg.add_attachment(
+            f.read(),
+            maintype="application",
+            subtype="pdf",
+            filename="TaxLabs_Report.pdf"
+        )
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(
+            os.environ["EMAIL_USER"],
+            os.environ["EMAIL_PASS"]
+        )
+        server.send_message(msg)
+
+
 @app.route("/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "Empty filename"}), 400
+    email = request.form.get("email")
 
     uid = str(uuid.uuid4())
     csv_path = os.path.join(UPLOAD_DIR, f"{uid}.csv")
     html_path = os.path.join(REPORT_DIR, f"{uid}.html")
+    pdf_path = os.path.join(REPORT_DIR, f"{uid}.pdf")
 
     file.save(csv_path)
 
     try:
         generate_report(csv_path, html_path)
-    except Exception as e:
-        return jsonify({"error": "HTML generation failed", "details": str(e)}), 500
-
-    with open(html_path, "r", encoding="utf-8") as f:
-        html = f.read()
-
-    return Response(
-        html,
-        headers={
-            "Content-Type": "text/html",
-            "X-Report-ID": uid
-        }
-    )
-
-
-@app.route("/download-pdf", methods=["GET"])
-def download_pdf():
-    report_id = request.args.get("id")
-    if not report_id:
-        return jsonify({"error": "Missing report id"}), 400
-
-    html_path = os.path.join(REPORT_DIR, f"{report_id}.html")
-    pdf_path = os.path.join(REPORT_DIR, f"{report_id}.pdf")
-
-    if not os.path.exists(html_path):
-        return jsonify({"error": "Report not found"}), 404
-
-    try:
         generate_pdf(html_path, pdf_path)
+
+        if email:
+            send_email(email, pdf_path)
+
     except Exception as e:
-        return jsonify({"error": "PDF generation failed", "details": str(e)}), 500
+        return jsonify({"error": "Processing failed", "details": str(e)}), 500
 
     return send_file(
         pdf_path,
