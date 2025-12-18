@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-import os
 
 app = Flask(__name__)
 
@@ -7,14 +6,12 @@ app = Flask(__name__)
 def health():
     return "TaxLabs backend is running", 200
 
-
 @app.route("/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-
     return jsonify({
         "filename": file.filename,
         "status": "received"
