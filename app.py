@@ -4,6 +4,7 @@ from report_html import generate_report
 from report_pdf import generate_pdf  # your existing PDF script
 
 app = Flask(__name__)
+
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -60,13 +61,7 @@ UPLOAD_PAGE = """
 @app.route("/", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
-        if "csv" not in request.files:
-            return "No file uploaded", 400
-
         file = request.files["csv"]
-        if file.filename == "":
-            return "Empty filename", 400
-
         path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(path)
 
@@ -78,7 +73,7 @@ def upload():
     return render_template_string(UPLOAD_PAGE)
 
 
-# ✅ THE ONLY CHANGE REQUIRED FOR RAILWAY
+# 🚨 THIS IS THE ONLY REQUIRED CHANGE FOR RAILWAY 🚨
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
