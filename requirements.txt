@@ -4,4 +4,3 @@ pandas
 reportlab
 beautifulsoup4
 lxml
-
