@@ -1,13 +1,13 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, send_file, jsonify
 import os
 
-# Report generation
 from report_html import generate_report
 from report_pdf import generate_pdf
 
 app = Flask(__name__)
 
 UPLOAD_DIR = "uploads"
+OUTPUT_PDF = "report.pdf"
 
 
 @app.route("/", methods=["GET"])
@@ -17,35 +17,32 @@ def health():
 
 @app.route("/upload", methods=["POST"])
 def upload():
-    # Validate upload
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-
     if file.filename == "":
         return jsonify({"error": "Empty filename"}), 400
 
     if not file.filename.lower().endswith(".csv"):
         return jsonify({"error": "Only CSV files are allowed"}), 400
 
-    # Save file
     os.makedirs(UPLOAD_DIR, exist_ok=True)
-    path = os.path.join(UPLOAD_DIR, file.filename)
-    file.save(path)
+    csv_path = os.path.join(UPLOAD_DIR, file.filename)
+    file.save(csv_path)
 
-    # Generate reports
     try:
-        generate_report(path)
-        generate_pdf(path)
-    except Exception as e:
-        # CRITICAL: return real error instead of crashing
-        return jsonify({
-            "error": "Report generation failed",
-            "details": str(e)
-        }), 500
+        # Generate reports
+        generate_report(csv_path)
+        generate_pdf(csv_path)
 
-    return jsonify({
-        "status": "success",
-        "file": file.filename
-    }), 200
+        # Send PDF directly to browser
+        return send_file(
+            OUTPUT_PDF,
+            as_attachment=True,
+            download_name="TaxLabs_Report.pdf",
+            mimetype="application/pdf"
+        )
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
