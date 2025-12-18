@@ -3,60 +3,66 @@
 <head>
   <meta charset="UTF-8" />
   <title>TaxLabs — Crypto Tax Clarity</title>
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
     body {
       margin: 0;
       padding: 0;
-      background: #0b1220;
+      background: #0f172a;
       color: #e5e7eb;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100vh;
+      min-height: 100vh;
     }
 
-    .container {
+    .card {
       background: #020617;
-      border-radius: 16px;
-      padding: 40px;
-      width: 100%;
+      padding: 32px;
+      border-radius: 14px;
       max-width: 420px;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
       text-align: center;
     }
 
     h1 {
       margin-top: 0;
-      color: #38bdf8;
+      margin-bottom: 8px;
       font-size: 28px;
+      color: #38bdf8;
     }
 
     p {
-      color: #94a3b8;
+      margin-top: 0;
+      margin-bottom: 24px;
+      color: #cbd5f5;
       font-size: 15px;
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
     input[type="file"] {
-      margin-top: 24px;
-      margin-bottom: 16px;
       width: 100%;
+      padding: 10px;
+      background: #020617;
       color: #e5e7eb;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      cursor: pointer;
     }
 
     button {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
       background: #38bdf8;
       color: #020617;
-      font-weight: 700;
       font-size: 16px;
-      border: none;
-      border-radius: 10px;
+      font-weight: 700;
       cursor: pointer;
     }
 
@@ -64,29 +70,27 @@
       background: #0ea5e9;
     }
 
-    .footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #64748b;
+    .note {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #94a3b8;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
+  <div class="card">
     <h1>TaxLabs</h1>
-
     <p>
-      Upload your crypto transaction CSV<br />
-      and get instant tax clarity.
+      Upload your crypto wallet CSV<br />
+      Get a clean tax summary instantly.
     </p>
 
-    <!-- ✅ THIS IS THE IMPORTANT PART -->
+    <!-- ✅ THIS IS THE ONLY FORM YOU NEED -->
     <form
       action="https://taxlabs-production.up.railway.app/upload"
       method="POST"
       enctype="multipart/form-data"
-      style="margin-top: 32px;"
     >
       <input
         type="file"
@@ -96,12 +100,13 @@
       />
 
       <button type="submit">
-        Upload CSV → Get Report
+        Upload CSV → Download PDF
       </button>
     </form>
 
-    <div class="footer">
-      Powered by TaxLabs
+    <div class="note">
+      Your file is processed securely.<br />
+      PDF downloads automatically.
     </div>
   </div>
 </body>
