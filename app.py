@@ -2,15 +2,12 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Railway-compatible health check
+# Railway health check (MUST respond fast)
 @app.route("/", methods=["GET"])
-def root():
-    return "OK", 200
-
-@app.route("/health", methods=["GET"])
 def health():
-    return jsonify(status="ok"), 200
+    return "TaxLabs backend is running", 200
 
+# Upload endpoint (stub for now)
 @app.route("/upload", methods=["POST"])
 def upload():
     if "file" not in request.files:
