@@ -1,7 +1,5 @@
-from flask import Flask, render_template_string, request, send_file
+from flask import Flask, request, send_file, render_template_string
 import os
-from report_html import generate_report
-from report_pdf import generate_pdf  # your existing PDF script
 
 app = Flask(__name__)
 
@@ -48,32 +46,32 @@ UPLOAD_PAGE = """
   </style>
 </head>
 <body>
-  <form class="box" method="post" enctype="multipart/form-data">
+  <form class="box" action="/upload" method="post" enctype="multipart/form-data">
     <h1>TaxLabs</h1>
     <p>Upload your wallet CSV.<br>Get clarity in seconds.</p>
-    <input type="file" name="csv" accept=".csv" required>
+    <input type="file" name="file" accept=".csv" required>
     <button type="submit">Generate Report</button>
   </form>
 </body>
 </html>
 """
 
-@app.route("/", methods=["GET", "POST"])
-def upload():
-    if request.method == "POST":
-        file = request.files["csv"]
-        path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(path)
-
-        generate_report(path)
-        generate_pdf(path)
-
-        return send_file("report.pdf", as_attachment=True)
-
+@app.route("/", methods=["GET"])
+def home():
     return render_template_string(UPLOAD_PAGE)
 
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files.get("file")
+    if not file:
+        return "No file uploaded", 400
 
-# 🚨 THIS IS THE ONLY REQUIRED CHANGE FOR RAILWAY 🚨
+    path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(path)
+
+    # TEMP: Return success without processing
+    return "CSV uploaded successfully. Processing coming next.", 200
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
