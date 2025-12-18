@@ -1,5 +1,7 @@
-from flask import Flask, request, send_file, render_template_string
+from flask import Flask, render_template_string, request, send_file
 import os
+from report_html import generate_report
+from report_pdf import generate_pdf
 
 app = Flask(__name__)
 
@@ -46,31 +48,29 @@ UPLOAD_PAGE = """
   </style>
 </head>
 <body>
-  <form class="box" action="/upload" method="post" enctype="multipart/form-data">
+  <form class="box" method="post" enctype="multipart/form-data">
     <h1>TaxLabs</h1>
     <p>Upload your wallet CSV.<br>Get clarity in seconds.</p>
-    <input type="file" name="file" accept=".csv" required>
+    <input type="file" name="csv" accept=".csv" required>
     <button type="submit">Generate Report</button>
   </form>
 </body>
 </html>
 """
 
-@app.route("/", methods=["GET"])
-def home():
-    return render_template_string(UPLOAD_PAGE)
-
-@app.route("/upload", methods=["POST"])
+@app.route("/", methods=["GET", "POST"])
 def upload():
-    file = request.files.get("file")
-    if not file:
-        return "No file uploaded", 400
+    if request.method == "POST":
+        file = request.files["csv"]
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
 
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
+        generate_report(path)
+        generate_pdf(path)
 
-    # TEMP: Return success without processing
-    return "CSV uploaded successfully. Processing coming next.", 200
+        return send_file("report.pdf", as_attachment=True)
+
+    return render_template_string(UPLOAD_PAGE)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
