@@ -1,0 +1,36 @@
+from summary import generate_summary
+
+def generate_text_report(csv_path):
+    s = generate_summary(csv_path)
+
+    report = f"""
+TAXLABS — CRYPTO TAX SUMMARY
+----------------------------
+
+Total transactions reviewed: {s['total_transactions']}
+
+Transaction breakdown:
+"""
+    for k, v in s["by_category"].items():
+        report += f"  - {k.capitalize()}: {v}\n"
+
+    report += f"""
+Likely taxable events: {s['likely_taxable_events']}
+Non-taxable events: {s['non_taxable_events']}
+
+Estimated net USD flow: ${s['net_usd_flow']}
+
+What matters:
+- Sells, swaps, and income are typically taxable
+- Transfers are usually not taxable
+- This summary helps you prepare before filing or speaking with an accountant
+
+Disclaimer:
+This is an informational summary, not tax advice.
+"""
+
+    return report
+
+if __name__ == "__main__":
+    report = generate_text_report("sample.csv")
+    print(report)
