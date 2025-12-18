@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET"])
 def health():
-    return "TaxLabs backend is running ✅", 200
+    return "TaxLabs backend is running", 200
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -17,7 +17,6 @@ def upload():
         "filename": file.filename,
         "status": "received"
     }), 200
-
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
