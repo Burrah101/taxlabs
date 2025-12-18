@@ -2,33 +2,251 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TaxLabs</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TaxLabs — Crypto Tax Clarity</title>
+
   <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #38bdf8;
+      --accent-strong: #0ea5e9;
+      --success: #22c55e;
+      --border: #1f2937;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: #0b0f19;
-      color: #e5e7eb;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, Helvetica, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px, #0f172a, var(--bg));
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 96px;
+    }
+
+    header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      text-align: center;
+      margin-bottom: 80px;
     }
-    h1 {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      font-size: 18px;
     }
-    p {
-      opacity: 0.8;
+
+    .badge {
+      font-size: 12px;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+
+    .hero {
+      max-width: 760px;
+      margin-bottom: 80px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      font-weight: 800;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    .cta {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      color: #020617;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 16px;
+      box-shadow: 0 10px 30px rgba(56,189,248,0.25);
+    }
+
+    .cta.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin-left: 16px;
+      box-shadow: none;
+    }
+
+    .section {
+      margin-top: 96px;
+    }
+
+    .section h2 {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+
+    .section p {
+      color: var(--muted);
+      max-width: 700px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #0b1220, var(--panel));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .price-box {
+      margin-top: 48px;
+      background: linear-gradient(180deg, #020617, #020617);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 520px;
+    }
+
+    .price {
+      font-size: 56px;
+      font-weight: 800;
+    }
+
+    .price span {
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    ul {
+      padding-left: 18px;
+      margin-top: 24px;
+    }
+
+    li {
+      margin-bottom: 10px;
+      color: var(--muted);
+    }
+
+    footer {
+      margin-top: 120px;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+      color: var(--muted);
+      font-size: 13px;
+      max-width: 800px;
     }
   </style>
 </head>
 <body>
-  <div>
-    <h1>TaxLabs</h1>
-    <p>Crypto tax clarity — before tax season decides for you.</p>
+
+  <div class="container">
+    <header>
+      <div class="logo">TaxLabs</div>
+      <div class="badge">Crypto tax clarity</div>
+    </header>
+
+    <section class="hero">
+      <h1>Understand your crypto taxes<br/>before tax season decides for you.</h1>
+      <p>
+        TaxLabs turns messy wallets and confusing transactions into a clear,
+        human-readable tax summary — so you know what actually matters before
+        filing or talking to an accountant.
+      </p>
+
+      <a href="#" class="cta">Upload CSV → Get Summary</a>
+      <a href="#pricing" class="cta secondary">See pricing</a>
+    </section>
+
+    <section class="section">
+      <h2>What TaxLabs does</h2>
+      <p>
+        No dashboards. No endless filters. Just the answers you need.
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h3>📊 Transaction clarity</h3>
+          <p>Groups buys, sells, swaps, income, and transfers automatically.</p>
+        </div>
+
+        <div class="card">
+          <h3>⚠️ Taxable events flagged</h3>
+          <p>Instantly see which activity may require reporting.</p>
+        </div>
+
+        <div class="card">
+          <h3>💵 Net activity estimate</h3>
+          <p>High-level USD impact to gauge how serious your situation is.</p>
+        </div>
+
+        <div class="card">
+          <h3>🧠 Human-readable summary</h3>
+          <p>Plain English — safe to share with an accountant.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="pricing">
+      <h2>Simple pricing</h2>
+
+      <div class="price-box">
+        <div class="price">$29 <span>one-time</span></div>
+
+        <ul>
+          <li>✔ One wallet or CSV upload</li>
+          <li>✔ Full activity breakdown</li>
+          <li>✔ Tax-relevant events highlighted</li>
+          <li>✔ Downloadable summary</li>
+          <li>✔ No subscription. No lock-in.</li>
+        </ul>
+
+        <a href="#" class="cta" style="margin-top: 24px; display:inline-block;">
+          Start your TaxLabs checkup
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      This report is informational only and not tax advice.  
+      Generated by TaxLabs — clarity before compliance.
+    </footer>
   </div>
+
 </body>
 </html>
