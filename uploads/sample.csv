@@ -1,6 +1,0 @@
-date,type,asset,amount,usd_value
-2024-01-05,buy,ETH,0.5,1200
-2024-02-10,sell,ETH,0.2,600
-2024-03-01,swap,ETH->USDC,0.3,900
-2024-03-15,income,USDC,200,200
-2024-04-01,transfer,ETH,0.1,0
