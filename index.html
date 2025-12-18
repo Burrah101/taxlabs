@@ -2,99 +2,102 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>TaxLabs — Crypto Tax Checkup</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaxLabs — Crypto Tax Clarity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    :root {
+      --bg: #020617;
+      --card: #0b1220;
+      --accent: #38bdf8;
+      --muted: #94a3b8;
+      --border: #1e293b;
+      --success: #22c55e;
+    }
+
     * {
       box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Ubuntu, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      background: radial-gradient(circle at top, #0f172a, #020617);
+      background: radial-gradient(circle at top, #0f172a, var(--bg));
       color: #e5e7eb;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 32px;
     }
 
     .card {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: linear-gradient(180deg, #0b1220, #020617);
       border-radius: 18px;
-      padding: 36px 32px 40px;
-      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      padding: 40px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      border: 1px solid var(--border);
     }
 
     h1 {
-      margin: 0;
+      margin: 0 0 8px;
+      color: var(--accent);
       font-size: 2rem;
-      color: #38bdf8;
       text-align: center;
     }
 
     .subtitle {
-      margin-top: 10px;
-      font-size: 0.95rem;
-      color: #cbd5f5;
       text-align: center;
-      line-height: 1.5;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 28px;
     }
 
-    form {
-      margin-top: 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
     }
 
     input[type="file"],
     input[type="email"] {
       width: 100%;
       padding: 12px 14px;
-      background: #020617;
-      border: 1px solid #1e293b;
       border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #020617;
       color: #e5e7eb;
-      font-size: 0.9rem;
+      margin-bottom: 16px;
     }
 
-    input::file-selector-button {
-      margin-right: 10px;
-      padding: 8px 12px;
-      border: none;
+    input[type="file"]::file-selector-button {
+      margin-right: 12px;
+      padding: 6px 10px;
       border-radius: 6px;
+      border: none;
       background: #1e293b;
       color: #e5e7eb;
       cursor: pointer;
     }
 
-    input::file-selector-button:hover {
-      background: #334155;
-    }
-
     button {
-      margin-top: 8px;
+      width: 100%;
       padding: 14px;
-      border: none;
       border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
       background: linear-gradient(90deg, #38bdf8, #0ea5e9);
       color: #020617;
-      font-size: 1rem;
-      font-weight: 700;
       cursor: pointer;
       transition: transform 0.15s ease, opacity 0.15s ease;
     }
 
     button:hover {
       transform: translateY(-1px);
-      opacity: 0.95;
     }
 
     button:disabled {
@@ -104,16 +107,16 @@
     }
 
     .status {
-      margin-top: 14px;
+      margin-top: 16px;
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: var(--muted);
       text-align: center;
       min-height: 1.2em;
     }
 
     .footer {
       margin-top: 26px;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #64748b;
       text-align: center;
       line-height: 1.4;
@@ -135,30 +138,26 @@
       enctype="multipart/form-data"
       onsubmit="onSubmit()"
     >
-      <input
-        type="file"
-        name="file"
-        accept=".csv"
-        required
-      />
+      <label>Wallet CSV</label>
+      <input type="file" name="file" accept=".csv" required />
 
+      <label>Email (optional)</label>
       <input
         type="email"
         name="email"
-        placeholder="Your email (to receive the PDF)"
-        required
+        placeholder="you@email.com"
       />
 
       <button id="submitBtn" type="submit">
         Upload CSV → Generate Report
       </button>
+
+      <div id="status" class="status"></div>
     </form>
 
-    <div id="status" class="status"></div>
-
     <div class="footer">
-      Processing is secure.<br />
-      PDF downloads automatically after upload.
+      Your file is processed securely.<br />
+      PDF downloads automatically.
     </div>
   </div>
 
@@ -168,8 +167,8 @@
       const status = document.getElementById("status");
 
       btn.disabled = true;
-      btn.innerText = "Uploading & generating…";
-      status.innerText = "Processing securely. Please wait…";
+      btn.textContent = "Uploading & generating…";
+      status.textContent = "Processing securely. PDF will download automatically.";
     }
   </script>
 </body>
