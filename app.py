@@ -1,98 +1,75 @@
-import os
 from flask import Flask, request, send_file, jsonify
-from werkzeug.utils import secure_filename
+import os
+import uuid
 
+# IMPORTANT: keep these imports once deps are installed
 from report_html import generate_report
 from report_pdf import generate_pdf
-
-# Optional email
-import smtplib
-from email.message import EmailMessage
 
 app = Flask(__name__)
 
 UPLOAD_DIR = "uploads"
+OUT_DIR = "out"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(OUT_DIR, exist_ok=True)
 
-
-def send_email_with_pdf(to_email, pdf_path):
-    """Send email WITHOUT breaking the app if it fails"""
-    try:
-        email_user = os.getenv("EMAIL_USER")
-        email_pass = os.getenv("EMAIL_PASS")
-        email_from = os.getenv("EMAIL_FROM", email_user)
-
-        if not email_user or not email_pass:
-            print("⚠️ Email skipped: missing EMAIL_USER or EMAIL_PASS")
-            return
-
-        msg = EmailMessage()
-        msg["Subject"] = "Your TaxLabs Crypto Report"
-        msg["From"] = email_from
-        msg["To"] = to_email
-        msg.set_content(
-            "Your TaxLabs crypto tax report is attached.\n\n— TaxLabs"
-        )
-
-        with open(pdf_path, "rb") as f:
-            msg.add_attachment(
-                f.read(),
-                maintype="application",
-                subtype="pdf",
-                filename=os.path.basename(pdf_path),
-            )
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(email_user, email_pass)
-            server.send_message(msg)
-
-        print("📧 Email sent to", to_email)
-
-    except Exception as e:
-        # CRITICAL: NEVER crash the app
-        print("❌ Email failed:", str(e))
-
-
-@app.route("/")
+@app.get("/")
 def health():
-    return "TaxLabs backend is running"
+    return "TaxLabs backend is running", 200
 
-
-@app.route("/upload", methods=["POST"])
+@app.post("/upload")
 def upload():
+    # 1) Validate upload
     if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+        return jsonify({"error": "No file uploaded. Field name must be 'file'."}), 400
 
-    file = request.files["file"]
-    email = request.form.get("email")
+    f = request.files["file"]
+    if not f.filename:
+        return jsonify({"error": "Empty filename."}), 400
 
-    if not file.filename:
-        return jsonify({"error": "Empty filename"}), 400
+    # Only allow CSV
+    if not f.filename.lower().endswith(".csv"):
+        return jsonify({"error": "Only .csv files are supported."}), 400
 
-    filename = secure_filename(file.filename)
-    csv_path = os.path.join(UPLOAD_DIR, filename)
-    file.save(csv_path)
+    # 2) Save file with a safe unique name (avoid weird filenames)
+    job_id = str(uuid.uuid4())[:8]
+    csv_path = os.path.join(UPLOAD_DIR, f"{job_id}.csv")
+    f.save(csv_path)
 
+    # 3) Generate HTML + PDF safely
     try:
-        # Generate HTML + PDF
-        html_path = generate_report(csv_path)
-        pdf_path = generate_pdf(html_path)
+        # generate_report writes report.html by your current function design
+        # We'll run it in a per-job filename to avoid collisions.
+        html_path = os.path.join(OUT_DIR, f"{job_id}.html")
+        pdf_path = os.path.join(OUT_DIR, f"TaxLabs_Report_{job_id}.pdf")
 
-        # Email is OPTIONAL and SAFE
-        if email:
-            send_email_with_pdf(email, pdf_path)
+        # If your generate_report only accepts csv_path and writes "report.html",
+        # we’ll support both styles:
+        try:
+            # Preferred (if you update generate_report to accept output path)
+            generate_report(csv_path, html_path)  # type: ignore
+        except TypeError:
+            # Current behavior: generate_report(csv_path) -> writes "report.html"
+            generate_report(csv_path)
+            # Move/rename it to our job html
+            if os.path.exists("report.html"):
+                os.replace("report.html", html_path)
+            else:
+                return jsonify({"error": "Report HTML was not generated."}), 500
 
-        # ALWAYS return the PDF
-        return send_file(
-            pdf_path,
-            as_attachment=True,
-            download_name="TaxLabs_Report.pdf",
-        )
+        # PDF generator: support both styles too
+        try:
+            generate_pdf(html_path, pdf_path)  # type: ignore
+        except TypeError:
+            # If your generate_pdf takes only html_path and outputs report.pdf
+            generate_pdf(html_path)
+            if os.path.exists("report.pdf"):
+                os.replace("report.pdf", pdf_path)
+            else:
+                return jsonify({"error": "Report PDF was not generated."}), 500
+
+        # 4) Return the PDF (this is the main success)
+        return send_file(pdf_path, as_attachment=True, download_name=os.path.basename(pdf_path))
 
     except Exception as e:
-        print("❌ Processing failed:", str(e))
         return jsonify({"error": "Processing failed", "details": str(e)}), 500
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
