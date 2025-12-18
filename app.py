@@ -1,36 +1,84 @@
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+from flask import Flask, render_template_string, request, send_file
 import os
 from report_html import generate_report
-from report_pdf import generate_pdf
+from report_pdf import generate_pdf  # your existing PDF script
 
 app = Flask(__name__)
-CORS(app)
-
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route("/upload", methods=["POST"])
+UPLOAD_PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TaxLabs — Upload CSV</title>
+  <style>
+    body {
+      background:#020617;
+      color:#e5e7eb;
+      font-family: system-ui, sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+    }
+    .box {
+      background:#0b1220;
+      padding:40px;
+      border-radius:14px;
+      width:420px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.6);
+    }
+    h1 { color:#38bdf8; }
+    input, button {
+      margin-top:20px;
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:none;
+    }
+    button {
+      background:#38bdf8;
+      color:#020617;
+      font-weight:700;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+  <form class="box" method="post" enctype="multipart/form-data">
+    <h1>TaxLabs</h1>
+    <p>Upload your wallet CSV.<br>Get clarity in seconds.</p>
+    <input type="file" name="csv" accept=".csv" required>
+    <button type="submit">Generate Report</button>
+  </form>
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
 def upload():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+    if request.method == "POST":
+        if "csv" not in request.files:
+            return "No file uploaded", 400
 
-    file = request.files["file"]
+        file = request.files["csv"]
+        if file.filename == "":
+            return "Empty filename", 400
 
-    if file.filename == "":
-        return jsonify({"error": "Empty filename"}), 400
+        path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(path)
 
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
+        generate_report(path)
+        generate_pdf(path)
 
-    generate_report(path)
-    generate_pdf(path)
+        return send_file("report.pdf", as_attachment=True)
 
-    return send_file("report.pdf", as_attachment=True)
+    return render_template_string(UPLOAD_PAGE)
 
-@app.route("/")
-def health():
-    return "TaxLabs backend running"
 
+# ✅ THE ONLY CHANGE REQUIRED FOR RAILWAY
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
