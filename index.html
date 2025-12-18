@@ -2,67 +2,115 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>TaxLabs — Crypto Tax Checkup</title>
+<title>TaxLabs — Crypto Tax Clarity</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 
 <style>
-body {
-  background: radial-gradient(circle at top, #0f172a, #020617);
-  color: #e5e7eb;
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+  body {
+    background: radial-gradient(circle at top, #0f172a, #020617);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #e5e7eb;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-.card {
-  background: linear-gradient(180deg, #0b1220, #020617);
-  padding: 36px;
-  border-radius: 18px;
-  width: 420px;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.6);
-  text-align: center;
-}
+  .card {
+    background: linear-gradient(180deg, #0b1220, #020617);
+    border-radius: 18px;
+    padding: 40px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+    text-align: center;
+  }
 
-h1 {
-  color: #38bdf8;
-  margin-bottom: 8px;
-}
+  h1 {
+    color: #38bdf8;
+    margin-bottom: 8px;
+    font-size: 1.8rem;
+  }
 
-p {
-  color: #cbd5f5;
-  font-size: 0.95rem;
-  margin-bottom: 24px;
-}
+  p {
+    font-size: 0.95rem;
+    color: #cbd5f5;
+    margin-bottom: 28px;
+  }
 
-input[type="file"] {
-  width: 100%;
-  margin-bottom: 16px;
-}
+  input[type="file"] {
+    width: 100%;
+    margin-bottom: 18px;
+    color: #e5e7eb;
+  }
 
-button {
-  width: 100%;
-  padding: 12px;
-  background: #38bdf8;
-  color: #020617;
-  border: none;
-  border-radius: 10px;
-  font-weight: 700;
-  cursor: pointer;
-}
+  button {
+    width: 100%;
+    background: #0ea5e9;
+    color: #020617;
+    border: none;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+  }
 
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 
-#status {
-  margin-top: 14px;
-  font-size: 0.85rem;
-  color: #94a3b8;
-}
+  #status {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+    min-height: 20px;
+  }
+
+  .footer {
+    margin-top: 28px;
+    font-size: 0.7rem;
+    color: #64748b;
+  }
 </style>
+</head>
+
+<body>
+
+<div class="card">
+  <h1>TaxLabs</h1>
+  <p>Upload your crypto wallet CSV.  
+  Get a clean tax summary instantly.</p>
+
+  <!-- IMPORTANT: FORM SUBMITS DIRECTLY TO /upload -->
+  <form
+    action="https://taxlabs-production.up.railway.app/upload"
+    method="POST"
+    enctype="multipart/form-data"
+    onsubmit="onSubmit()"
+  >
+    <input
+      type="file"
+      name="file"
+      accept=".csv"
+      required
+    />
+
+    <button id="submitBtn" type="submit">
+      Upload CSV → Download PDF
+    </button>
+  </form>
+
+  <div id="status"></div>
+
+  <div class="footer">
+    Your file is processed securely.<br />
+    PDF downloads automatically.
+  </div>
+</div>
 
 <script>
 function onSubmit() {
@@ -70,36 +118,15 @@ function onSubmit() {
   const status = document.getElementById("status");
 
   btn.disabled = true;
-  btn.innerText = "Uploading…";
-  status.innerText = "Processing your CSV. PDF will download automatically.";
+  btn.textContent = "Uploading… Please wait";
+  status.textContent = "Processing your report…";
+
+  // IMPORTANT:
+  // No fetch()
+  // No redirect
+  // Browser handles PDF download from /upload response
 }
 </script>
-</head>
 
-<body>
-  <div class="card">
-    <h1>TaxLabs</h1>
-    <p>Upload your crypto wallet CSV.<br>Get a clean tax summary instantly.</p>
-
-    <form
-      action="https://taxlabs-production.up.railway.app/upload"
-      method="POST"
-      enctype="multipart/form-data"
-      onsubmit="onSubmit()"
-    >
-      <input
-        type="file"
-        name="file"
-        accept=".csv"
-        required
-      />
-
-      <button id="submitBtn" type="submit">
-        Upload CSV → Download PDF
-      </button>
-    </form>
-
-    <div id="status"></div>
-  </div>
 </body>
 </html>
