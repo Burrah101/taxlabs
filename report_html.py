@@ -1,60 +1,62 @@
 import pandas as pd
 from datetime import datetime
 
+
 def generate_report(csv_path, output_html_path):
-    # Read CSV safely (handles broken exchange CSVs)
+    # 🔒 PROD MODE CSV CLEANING
     df = pd.read_csv(
         csv_path,
+        sep=",",
         engine="python",
-        sep=None,
-        on_bad_lines="skip"
+        on_bad_lines="skip",
+        skip_blank_lines=True
     )
 
-    df.columns = [c.lower().strip() for c in df.columns]
+    df.columns = [c.strip().lower() for c in df.columns]
+
+    required_columns = {"type", "usd_value"}
+    missing = required_columns - set(df.columns)
+
+    if missing:
+        raise ValueError(f"CSV missing required columns: {missing}")
 
     total_transactions = len(df)
-
-    if "type" in df.columns:
-        counts = df["type"].value_counts().to_dict()
-    else:
-        counts = {}
+    counts = df["type"].value_counts().to_dict()
 
     taxable_types = {"sell", "swap", "income"}
     taxable_events = sum(counts.get(t, 0) for t in taxable_types)
 
-    if "usd_value" in df.columns:
-        net_usd = int(pd.to_numeric(df["usd_value"], errors="coerce").fillna(0).sum())
-    else:
-        net_usd = 0
-
+    net_usd = int(df["usd_value"].fillna(0).sum())
     today = datetime.today().strftime("%Y-%m-%d")
 
     html = f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>TaxLabs — Crypto Tax Checkup</title>
 <style>
 body {{
-  background:#020617;
-  color:#e5e7eb;
-  font-family:system-ui;
-  padding:40px;
+  background: radial-gradient(circle at top, #0f172a, #020617);
+  color: #e5e7eb;
+  font-family: system-ui, sans-serif;
+  padding: 40px;
 }}
+
 .container {{
-  max-width:700px;
-  margin:auto;
-  background:#0b1220;
-  padding:40px;
-  border-radius:16px;
+  max-width: 760px;
+  margin: auto;
+  background: #020617;
+  border-radius: 18px;
+  padding: 40px;
 }}
-h1 {{ color:#38bdf8; }}
-table {{ width:100%; margin-top:20px; border-collapse:collapse; }}
-td, th {{ padding:8px; border-bottom:1px solid #1e293b; }}
-.alert {{ margin-top:20px; padding:14px; border-radius:10px; }}
-.warning {{ background:#3f2d0c; color:#fde68a; }}
-.success {{ background:#052e1a; color:#86efac; }}
+
+h1 {{ color: #38bdf8; }}
+table {{ width: 100%; border-collapse: collapse; }}
+th, td {{ padding: 10px; border-bottom: 1px solid #1e293b; }}
+.alert {{ margin-top: 20px; padding: 16px; border-radius: 12px; }}
+.warning {{ background: #3f2d0c; color: #fde68a; }}
+.success {{ background: #052e1a; color: #86efac; }}
 </style>
 </head>
 <body>
@@ -62,7 +64,8 @@ td, th {{ padding:8px; border-bottom:1px solid #1e293b; }}
 <h1>TaxLabs — Crypto Tax Checkup</h1>
 <p>Generated on {today}</p>
 
-<p><strong>Total transactions reviewed:</strong> {total_transactions}</p>
+<h3>Activity overview</h3>
+<p><strong>Total transactions:</strong> {total_transactions}</p>
 
 <table>
 <tr><th>Type</th><th>Count</th></tr>
@@ -81,7 +84,7 @@ td, th {{ padding:8px; border-bottom:1px solid #1e293b; }}
 💰 Estimated net USD activity: ${net_usd}
 </div>
 
-<p style="margin-top:30px;font-size:0.8rem;color:#94a3b8">
+<p style="margin-top:20px;font-size:12px;color:#94a3b8;">
 This report is informational only and not tax advice.
 </p>
 
