@@ -1,60 +1,43 @@
-from flask import Flask, request, send_file, jsonify, render_template
-from io import BytesIO
-from report_pdf import generate_pdf  # Your PDF generator
-from werkzeug.utils import secure_filename
-import os
-import smtplib
-from email.message import EmailMessage
+from flask import Flask, request, send_file, jsonify
 import traceback
+import io
+import pandas as pd
 
 app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
-        # ✅ Step 1: Get uploaded file
-        if 'file' not in request.files:
-            return jsonify({"error": "No file part"}), 400
         file = request.files['file']
-        if file.filename == '':
-            return jsonify({"error": "No selected file"}), 400
+        email = request.form.get('email')
 
-        # ✅ Step 2: Read file contents
-        filename = secure_filename(file.filename)
-        csv_data = file.read().decode('utf-8')
+        if not file:
+            return jsonify({"error": "No file provided"}), 400
 
-        # ✅ Step 3: Generate PDF in memory
-        pdf_buffer = BytesIO()
-        generate_pdf(csv_data, pdf_buffer)
+        # 🔥 FIX is here: read uploaded CSV from file stream, not from path
+        df = pd.read_csv(file.stream)
+
+        # 🔄 Your existing processing logic
+        from report_pdf import generate_pdf
+        pdf_buffer = generate_pdf(df, email)
+
+        # 🧪 Email logic (optional, safe fallback if fails)
+        try:
+            from send_email import send_email_with_pdf
+            if email:
+                send_email_with_pdf(email, pdf_buffer)
+        except Exception as email_error:
+            print("Email error:", email_error)
+
         pdf_buffer.seek(0)
-
-        # ✅ Step 4: Optional email sending
-        email_to = request.form.get("email", "").strip()
-        if email_to:
-            msg = EmailMessage()
-            msg['Subject'] = "Your Tax Report"
-            msg['From'] = os.environ.get("EMAIL_FROM")
-            msg['To'] = email_to
-            msg.set_content("Here is your tax report PDF.")
-            msg.add_attachment(pdf_buffer.getvalue(), maintype='application', subtype='pdf', filename="TaxLabs_Report.pdf")
-
-            with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-                smtp.login(os.environ.get("EMAIL_USER"), os.environ.get("EMAIL_PASS"))
-                smtp.send_message(msg)
-
-            # Reset buffer position after sending email
-            pdf_buffer.seek(0)
-
-        # ✅ Step 5: Return PDF to browser
-        return send_file(pdf_buffer, mimetype='application/pdf', as_attachment=True, download_name='TaxLabs_Report.pdf')
+        return send_file(
+            pdf_buffer,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name='TaxLabs_Report.pdf'
+        )
 
     except Exception as e:
-        # 🔥 Catch and log full traceback
-        print("===== EXCEPTION TRACEBACK START =====")
         print(traceback.format_exc())
-        print("===== EXCEPTION TRACEBACK END =====")
         return jsonify({"error": "Processing failed", "details": str(e)}), 500
+
