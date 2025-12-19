@@ -1,6 +1,4 @@
 Flask
 pandas
 reportlab
-lxml
-email-validator
 gunicorn
