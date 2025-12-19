@@ -6,6 +6,48 @@ from io import BytesIO
 from report_pdf import generate_pdf
 
 app = Flask(__name__)
+import stripe
+from flask import redirect, url_for
+
+print("✅ Stripe block loaded")  # Debug print
+
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
+YOUR_PRICE = 300  # $3.00 in cents
+
+@app.route("/checkout")
+def checkout():
+    try:
+        print("⚙️  Creating Stripe Checkout session...")  # Debugging print
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "unit_amount": YOUR_PRICE,
+                    "product_data": {"name": "Tax Report PDF"},
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=url_for('success', _external=True),
+            cancel_url=url_for('cancel', _external=True),
+        )
+        return redirect(session.url, code=303)
+
+    except Exception as e:
+        print(f"❌ Stripe Checkout Error: {e}")
+        return "Something went wrong during checkout.", 500
+
+
+@app.route("/success")
+def success():
+    return "✅ Payment successful! You can now download your PDF."
+
+
+@app.route("/cancel")
+def cancel():
+    return "❌ Payment was cancelled. No charge was made."
 
 # ✅ Stripe Test Secret Key (standard, working)
 stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
