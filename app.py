@@ -5,16 +5,14 @@ print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# 🔐 STRIPE KEY — PASTE EXACTLY AS BELOW (NO EDITS)
-STRIPE_SECRET_KEY = (
-    "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmc"
-    "JPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
-)
+# 🔐 STRIPE KEY - Store as single string
+STRIPE_SECRET_KEY = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
 
 stripe.api_key = STRIPE_SECRET_KEY
 
 print("🔐 Stripe key length:", len(STRIPE_SECRET_KEY))
-print("🔐 Stripe key preview:", STRIPE_SECRET_KEY[:12])
+print("🔐 Stripe key starts with:", STRIPE_SECRET_KEY[:15])
+print("🔐 Stripe key ends with:", STRIPE_SECRET_KEY[-10:])
 
 YOUR_PRICE = 300  # $3.00
 
@@ -48,9 +46,13 @@ def checkout():
         )
         print("✅ Stripe session created:", session.id)
         return redirect(session.url, code=303)
-
+    except stripe.error.StripeError as e:
+        print("🔥 STRIPE ERROR:")
+        print(f"Type: {type(e).__name__}")
+        print(f"Message: {str(e)}")
+        return f"Stripe Error: {str(e)}", 500
     except Exception as e:
-        print("🔥 STRIPE ERROR (FULL):")
+        print("🔥 UNEXPECTED ERROR:")
         print(repr(e))
         return "Something went wrong during checkout.", 500
 
