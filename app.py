@@ -5,6 +5,13 @@ import traceback
 from report_pdf import generate_pdf  # Ensure this function writes to pdf_buffer
 
 app = Flask(__name__)
+import stripe
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PG9FAUKWdpCe79jlnXMj3XE6xrWJ91cQpH80y6Jy9j7A0yJlkoM5CQyTnC0Tbo1h3t4XRALg100KuASqDKr"  # Replace with your actual key
+
+YOUR_PRICE = 300  # $3.00 in cents
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PG9FAUKWdpCe79jlnXMj3XE6xrWJ91cQpH80y6Jy9j7A0yJlkoM5CQyTnC0Tbo1h3t4XRALg100KuASqDKr"  # Replace with your actual key
+
+YOUR_PRICE = 300  # $3.00 in cents
 
 @app.route('/')
 def index():
