@@ -1,4 +1,3 @@
-
 from reportlab.pdfgen import canvas
 
 def generate_pdf(df, buffer):
@@ -11,4 +10,4 @@ def generate_pdf(df, buffer):
         c.drawString(100, y, line)
         y -= 20
 
-    c.save()
+    c.save()  # ✅ Must close the canvas
