@@ -1,7 +1,5 @@
-flask
-gunicorn
-pandas
-reportlab
-beautifulsoup4
+Flask
 lxml
+reportlab
+pandas
 email-validator
