@@ -1,3 +1,4 @@
+app.run(debug=True)
 from flask import Flask, request, send_file, jsonify
 import pandas as pd
 from io import BytesIO
