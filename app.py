@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, jsonify, redirect, url_for
+from flask import Flask, request, send_file, jsonify, redirect, url_for
 import pandas as pd
 import traceback
 from io import BytesIO
@@ -6,35 +6,41 @@ import stripe
 
 app = Flask(__name__)
 
-# ✅ Stripe Test Key
+# ✅ Stripe Config
 stripe.api_key = "sk_test_51sfuJ1GXW2HJur5PnDM1nTbr5P96PAUKWdpCe7gjiNzf9Mj3XE6xrWJ91cQpH8oy63y9j7A0yJ1koMSCQyTnCCTbo1h3t4XARLg100kUAsqDKPr"
 YOUR_PRICE = 300  # $3.00 in cents
 
-@app.route('/')
+@app.route("/")
 def index():
     return '''
+    <!DOCTYPE html>
     <html>
-    <head><title>TaxLabs</title></head>
-    <body style="background-color:#0a0a1f; color:white; font-family:sans-serif; text-align:center; padding-top:100px;">
-        <h1 style="color:#00bfff;">TaxLabs</h1>
+    <head>
+        <title>TaxLabs</title>
+        <style>
+            body { background-color: #0e0e1d; color: white; font-family: Arial; text-align: center; padding-top: 50px; }
+            input[type="file"] { margin: 20px auto; display: block; }
+            button { background-color: #09f; color: white; padding: 10px 20px; border: none; cursor: pointer; font-size: 16px; }
+        </style>
+    </head>
+    <body>
+        <h1>TaxLabs</h1>
         <p>Upload your wallet CSV.<br>Get clarity in seconds.</p>
         <form method="POST" action="/upload" enctype="multipart/form-data">
             <input type="file" name="file" required>
-            <br><br>
-            <button type="submit" style="background:#00bfff; color:white; border:none; padding:10px 20px; cursor:pointer;">Generate Report</button>
+            <button type="submit">Generate Report</button>
         </form>
-        <br>
-        <a href="/checkout" style="color:#00bfff;">💳 Buy Full Report ($3.00)</a>
     </body>
     </html>
     '''
 
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload():
     try:
         file = request.files['file']
         df = pd.read_csv(file)
 
+        # Create in-memory buffer
         pdf_buffer = BytesIO()
         generate_pdf(df, pdf_buffer)
         pdf_buffer.seek(0)
@@ -45,10 +51,12 @@ def upload():
             as_attachment=True,
             download_name='TaxLabs_Report.pdf'
         )
+
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({"error": "Processing failed", "details": str(e)}), 500
 
+# ✅ Stripe Checkout Route
 @app.route("/checkout")
 def checkout():
     try:
@@ -58,9 +66,7 @@ def checkout():
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": YOUR_PRICE,
-                    "product_data": {
-                        "name": "Tax Report PDF"
-                    },
+                    "product_data": {"name": "Tax Report PDF"},
                 },
                 "quantity": 1,
             }],
@@ -75,31 +81,31 @@ def checkout():
 
 @app.route("/success")
 def success():
-    return """
-    ✅ Payment successful!<br>
-    Your PDF is unlocked.<br>
-    You can now close this window or go back to the app.
-    """
+    return "✅ Payment successful! You can now download your PDF."
 
 @app.route("/cancel")
 def cancel():
-    return """
-    ❌ Payment was cancelled.<br>
-    No charge was made. Please try again if you still want the PDF.
-    """
+    return "❌ Payment was cancelled. No charge was made."
 
-# ✅ PDF generator (basic version)
+# ✅ PDF Generator using reportlab
+from reportlab.pdfgen import canvas
 def generate_pdf(df, buffer):
-    from reportlab.pdfgen import canvas
     c = canvas.Canvas(buffer)
     c.drawString(100, 800, "Tax Report Summary")
+
     y = 750
     for index, row in df.iterrows():
         line = f"{row['date']} | {row['type']} | {row['asset']} | ${row['usd_value']}"
         c.drawString(100, y, line)
         y -= 20
+
     c.save()
 
-# ✅ Debug run
+# ✅ Debug route to confirm right file
+@app.route("/test")
+def test():
+    return "✅ You are running the correct app.py"
+
+# ✅ Start the app
 if __name__ == "__main__":
     app.run(debug=True)
