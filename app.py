@@ -1,67 +1,38 @@
-from flask import Flask, request, send_file, jsonify, redirect, url_for
+from flask import Flask, render_template, request, send_file, jsonify, redirect, url_for
 import pandas as pd
-from io import BytesIO
 import traceback
-
-# PDF
-from reportlab.pdfgen import canvas
-
-# Stripe
+from io import BytesIO
 import stripe
 
 app = Flask(__name__)
 
-# =========================
-# STRIPE CONFIG (TEST MODE)
-# =========================
+# ✅ Stripe Test Key
 stripe.api_key = "sk_test_51sfuJ1GXW2HJur5PnDM1nTbr5P96PAUKWdpCe7gjiNzf9Mj3XE6xrWJ91cQpH8oy63y9j7A0yJ1koMSCQyTnCCTbo1h3t4XARLg100kUAsqDKPr"
 YOUR_PRICE = 300  # $3.00 in cents
 
-
-# =========================
-# PDF GENERATION
-# =========================
-def generate_pdf(df, buffer):
-    c = canvas.Canvas(buffer)
-    c.drawString(100, 800, "TaxLabs — Crypto Tax Report")
-
-    y = 760
-    for _, row in df.iterrows():
-        line = f"{row['date']} | {row['type']} | {row['asset']} | ${row['usd_value']}"
-        c.drawString(80, y, line)
-        y -= 18
-
-        if y < 50:
-            c.showPage()
-            y = 760
-
-    c.save()  # MUST close PDF
-
-
-# =========================
-# ROUTES
-# =========================
-
-@app.route("/")
+@app.route('/')
 def index():
-    return """
-    <h2>TaxLabs Local Test</h2>
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".csv" required><br><br>
-        <button type="submit">Upload CSV → Download PDF</button>
-    </form>
-    <br>
-    <a href="/checkout">Pay $3 (Stripe Test)</a>
-    """
+    return '''
+    <html>
+    <head><title>TaxLabs</title></head>
+    <body style="background-color:#0a0a1f; color:white; font-family:sans-serif; text-align:center; padding-top:100px;">
+        <h1 style="color:#00bfff;">TaxLabs</h1>
+        <p>Upload your wallet CSV.<br>Get clarity in seconds.</p>
+        <form method="POST" action="/upload" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <br><br>
+            <button type="submit" style="background:#00bfff; color:white; border:none; padding:10px 20px; cursor:pointer;">Generate Report</button>
+        </form>
+        <br>
+        <a href="/checkout" style="color:#00bfff;">💳 Buy Full Report ($3.00)</a>
+    </body>
+    </html>
+    '''
 
-
-@app.route("/upload", methods=["POST"])
+@app.route('/upload', methods=['POST'])
 def upload():
     try:
-        file = request.files["file"]
-        if not file:
-            return jsonify({"error": "No file uploaded"}), 400
-
+        file = request.files['file']
         df = pd.read_csv(file)
 
         pdf_buffer = BytesIO()
@@ -70,15 +41,13 @@ def upload():
 
         return send_file(
             pdf_buffer,
-            mimetype="application/pdf",
+            mimetype='application/pdf',
             as_attachment=True,
-            download_name="TaxLabs_Report.pdf"
+            download_name='TaxLabs_Report.pdf'
         )
-
     except Exception as e:
         print(traceback.format_exc())
         return jsonify({"error": "Processing failed", "details": str(e)}), 500
-
 
 @app.route("/checkout")
 def checkout():
@@ -96,28 +65,41 @@ def checkout():
                 "quantity": 1,
             }],
             mode="payment",
-            success_url=url_for("success", _external=True),
-            cancel_url=url_for("cancel", _external=True),
+            success_url=url_for('success', _external=True),
+            cancel_url=url_for('cancel', _external=True),
         )
         return redirect(session.url, code=303)
-
     except Exception as e:
-        print("Stripe error:", e)
-        return "Stripe checkout failed", 500
-
+        print(f"Stripe Error: {e}")
+        return "Something went wrong during checkout.", 500
 
 @app.route("/success")
 def success():
-    return "<h2>✅ Payment successful</h2><p>You may return to the app.</p>"
-
+    return """
+    ✅ Payment successful!<br>
+    Your PDF is unlocked.<br>
+    You can now close this window or go back to the app.
+    """
 
 @app.route("/cancel")
 def cancel():
-    return "<h2>❌ Payment cancelled</h2>"
+    return """
+    ❌ Payment was cancelled.<br>
+    No charge was made. Please try again if you still want the PDF.
+    """
 
+# ✅ PDF generator (basic version)
+def generate_pdf(df, buffer):
+    from reportlab.pdfgen import canvas
+    c = canvas.Canvas(buffer)
+    c.drawString(100, 800, "Tax Report Summary")
+    y = 750
+    for index, row in df.iterrows():
+        line = f"{row['date']} | {row['type']} | {row['asset']} | ${row['usd_value']}"
+        c.drawString(100, y, line)
+        y -= 20
+    c.save()
 
-# =========================
-# LOCAL DEV ENTRYPOINT
-# =========================
+# ✅ Debug run
 if __name__ == "__main__":
     app.run(debug=True)
