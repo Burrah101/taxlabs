@@ -5,7 +5,7 @@ app = Flask(__name__)
 print("✅ This is the correct app.py")
 
 # ✅ Stripe Secret Key (paste the fresh sk_test key here)
-stripe.api_key = "rk_test_51SfuJ1GXW2HJur5PuRrG69b1pbcCw7QWTCWFJpu5FObrbSx8xnJNzbymB3ohVHVOZDvcD4eXfU5esP5AHkCahUMP00zaDCE6fp"
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
 
 YOUR_PRICE = 300  # in cents ($3.00)
 
