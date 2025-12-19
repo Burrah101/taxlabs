@@ -1,22 +1,22 @@
 from flask import Flask, request, send_file, jsonify, redirect, url_for
 from io import BytesIO
-import traceback
 import pandas as pd
+import traceback
 import stripe
 
-# Initialize Flask app
 app = Flask(__name__)
-print("✅ This is the correct app.py")
 
-# ✅ Stripe setup (Test key from your confirmed working test)
+# ✅ Stripe secret key (confirmed working from your terminal test)
 stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
-YOUR_PRICE = 300  # in cents ($3.00)
+print(f"🔐 Stripe key in use: {stripe.api_key}")
 
-# Stripe Checkout Route
+# ✅ Stripe product price (in cents)
+YOUR_PRICE = 300  # $3.00
+
 @app.route("/checkout")
 def checkout():
     try:
-        print("⚙️ Creating Stripe Checkout session...")
+        print("⚙️  Creating Stripe Checkout session...")
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
@@ -31,11 +31,10 @@ def checkout():
             success_url=url_for('success', _external=True),
             cancel_url=url_for('cancel', _external=True),
         )
-        print("✅ Session created:", session.url)
+        print("✅ Stripe session created.")
         return redirect(session.url, code=303)
-
     except Exception as e:
-        print(f"❌ Stripe Error: {e}")
+        print(f"Stripe Error: {e}")
         return "Something went wrong during checkout.", 500
 
 @app.route("/success")
@@ -46,25 +45,23 @@ def success():
 def cancel():
     return "❌ Payment was cancelled. No charge was made."
 
-# PDF Generation Logic
-from reportlab.pdfgen import canvas
-
-def generate_pdf(df, buffer):
-    c = canvas.Canvas(buffer)
-    c.drawString(100, 800, "Tax Report Summary")
-    y = 750
-    for index, row in df.iterrows():
-        line = f"{row['date']} | {row['type']} | {row['asset']} | ${row['usd_value']}"
-        c.drawString(100, y, line)
-        y -= 20
-    c.save()
+@app.route("/test")
+def test():
+    return "✅ You are running the correct app.py"
 
 @app.route("/upload", methods=["POST"])
 def upload():
     try:
-        file = request.files['file']
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
+
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "Empty filename"}), 400
+
         df = pd.read_csv(file)
 
+        from report_pdf import generate_pdf
         pdf_buffer = BytesIO()
         generate_pdf(df, pdf_buffer)
         pdf_buffer.seek(0)
@@ -78,15 +75,8 @@ def upload():
 
     except Exception as e:
         print(traceback.format_exc())
-        return jsonify({
-            "error": "Processing failed",
-            "details": str(e)
-        }), 500
+        return jsonify({"error": "Processing failed", "details": str(e)}), 500
 
-@app.route("/test")
-def test():
-    return "✅ You are running the correct app.py"
-
-# Run locally
 if __name__ == "__main__":
+    print("✅ This is the correct app.py")
     app.run(debug=True)
