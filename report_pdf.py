@@ -4,7 +4,7 @@ def generate_pdf(df, buffer):
     c = canvas.Canvas(buffer)
     c.setFont("Helvetica", 12)
     c.drawString(100, 800, "TaxLabs — Crypto Tax Summary")
-
+    
     y = 780
     for index, row in df.iterrows():
         line = f"{row['date']} — {row['type']} — {row['asset']} — {row['amount']} — {row['usd_value']}"
