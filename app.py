@@ -7,7 +7,7 @@ import stripe
 app = Flask(__name__)
 
 # ✅ Stripe Config
-stripe.api_key = "sk_test_51sfuJ1GXW2HJur5PnDM1nTbr5P96PAUKWdpCe7gjiNzf9Mj3XE6xrWJ91cQpH8oy63y9j7A0yJ1koMSCQyTnCCTbo1h3t4XARLg100kUAsqDKPr"
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PG9FAUKWdpCe79jlnXMj3XE6xrWJ91cQpH80y6Jy9j7A0yJlkoM5CQyTnC0Tbo1h3t4XRALg100KuASqDKr"
 YOUR_PRICE = 300  # $3.00 in cents
 
 @app.route("/")
