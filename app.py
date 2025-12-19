@@ -1,3 +1,11 @@
+from flask import Flask, request, send_file, jsonify
+import pandas as pd
+from io import BytesIO
+import traceback
+from report_pdf import generate_pdf
+
+app = Flask(__name__)
+
 @app.route('/upload', methods=['POST'])
 def upload():
     try:
@@ -15,6 +23,8 @@ def upload():
             download_name='TaxLabs_Report.pdf'
         )
     except Exception as e:
-        import traceback
         print(traceback.format_exc())
-        return jsonify({"error": "Processing failed", "details": str(e)}), 500
+        return jsonify({
+            "error": "Processing failed",
+            "details": str(e)
+        }), 500
