@@ -1,33 +1,38 @@
 from flask import Flask, redirect, url_for
+import os
 import stripe
 
 print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# ✅ Stripe Key — copy your full working key here
-stripe.api_key = "sk_test_51SfuJ1GXW2HJur5Pq9oEqwDjv1abc123XYZabcDEFabc4567h0vI9XDa2efEpSuN00ECDBsziU"
+# Stripe key comes from Railway / local env
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
-# 💡 Debug to confirm runtime key
-print("🔐 Stripe key preview:", stripe.api_key[:12])
-print("🔐 Stripe key length:", len(stripe.api_key))
+print("🔐 Stripe key loaded:", bool(stripe.api_key))
+
+YOUR_PRICE = 300  # $3.00
 
 @app.route("/")
-def home():
-    return "✅ TaxLabs app is running"
+def index():
+    return "TaxLabs Home"
+
+@app.route("/test")
+def test():
+    return "✅ You are running the correct app.py"
 
 @app.route("/checkout")
 def checkout():
     try:
-        print("⚙️ Creating Stripe session...")
+        print("⚙️ Creating Stripe Checkout session...")
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
                 "price_data": {
                     "currency": "usd",
-                    "unit_amount": 500,
+                    "unit_amount": YOUR_PRICE,
                     "product_data": {
-                        "name": "PDF Report"
+                        "name": "Tax Report PDF"
                     },
                 },
                 "quantity": 1,
@@ -36,7 +41,7 @@ def checkout():
             success_url=url_for("success", _external=True),
             cancel_url=url_for("cancel", _external=True),
         )
-        print("✅ Session created:", session.id)
+        print("✅ Stripe session created:", session.id)
         return redirect(session.url, code=303)
     except Exception as e:
         print("🔥 STRIPE ERROR:", repr(e))
@@ -44,11 +49,11 @@ def checkout():
 
 @app.route("/success")
 def success():
-    return "✅ Payment was successful!"
+    return "✅ Payment successful!"
 
 @app.route("/cancel")
 def cancel():
-    return "❌ Payment was cancelled!"
+    return "❌ Payment cancelled."
 
 if __name__ == "__main__":
     app.run(debug=True)
