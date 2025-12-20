@@ -6,19 +6,20 @@ print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# Read secret from Railway environment
+# Load Stripe key from environment (Railway or local)
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 print("🔐 Stripe key loaded:", bool(stripe.api_key))
 
 YOUR_PRICE = 300  # $3.00
 
 @app.route("/")
 def index():
-    return "✅ TaxLabs Home"
+    return "TaxLabs Home"
 
 @app.route("/test")
 def test():
-    return "✅ Test route working"
+    return "✅ You are running the correct app.py"
 
 @app.route("/checkout")
 def checkout():
