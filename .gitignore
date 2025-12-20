@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+.env/
+
+# Generated reports
+report.html
+report.pdf
+
+# Uploaded files
+uploads/
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Editors
+*.log
+*.tmp
+*.swp
+.idea/
+.vscode/
+
+# Local notes
+*.txt

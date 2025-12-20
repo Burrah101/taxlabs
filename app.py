@@ -6,7 +6,7 @@ print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# Load Stripe key from environment (Railway or local)
+# Stripe secret comes ONLY from environment variable (Railway)
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 print("🔐 Stripe key loaded:", bool(stripe.api_key))
@@ -54,4 +54,4 @@ def cancel():
     return "❌ Payment cancelled."
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
