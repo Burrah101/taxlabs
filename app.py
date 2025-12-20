@@ -1,19 +1,15 @@
 from flask import Flask, redirect, url_for
 import stripe
 
-print("✅ app.py loaded")
-
 app = Flask(__name__)
 
-# 🔐 STRIPE KEY: Copy exactly from dashboard, NO newline, NO wrapping
-stripe.api_key = "sk_test_51SfuJ1GXW2HJur5Pq9oEqwDjv1abc123XYZabcDEFabc4567h0vI9XDa2efEpSuN00ECDBsziU"
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
+print("🔐 LIVE STRIPE KEY:", stripe.api_key)
 
-print("🔐 Stripe key length:", len(stripe.api_key))
-print("🔐 Stripe key preview:", stripe.api_key[:12])
-
-@app.route("/")
-def index():
-    return "✅ Home page"
+@app.route("/
+test")
+def test():
+    return "✅ You are running the correct app.py"
 
 @app.route("/checkout")
 def checkout():
@@ -25,7 +21,7 @@ def checkout():
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": 500,
-                    "product_data": {"name": "PDF Download"},
+                    "product_data": {"name": "PDF"},
                 },
                 "quantity": 1,
             }],
@@ -45,7 +41,7 @@ def success():
 
 @app.route("/cancel")
 def cancel():
-    return "❌ Payment canceled!"
+    return "❌ Payment canceled."
 
 if __name__ == "__main__":
     app.run(debug=True)
