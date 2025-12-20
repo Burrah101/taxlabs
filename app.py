@@ -1,7 +1,6 @@
 You reached the start of the range
 Dec 19, 2025, 7:32 PM
 Starting Container
-[2025-12-20 03:38:44 +0000] [1] [INFO] Using worker: sync
 [2025-12-20 03:38:44 +0000] [2] [INFO] Booting worker with pid: 2
 [2025-12-20 03:38:44 +0000] [2] [ERROR] Exception in worker process
 Traceback (most recent call last):
