@@ -5,33 +5,30 @@ print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# ✅ STRIPE KEY
-stripe.api_key = (
-    "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
-)
+# ✅ Stripe Key — copy your full working key here
+stripe.api_key = "sk_test_51SfuJ1GXW2HJur5Pq9oEqwDjv1abc123XYZabcDEFabc4567h0vI9XDa2efEpSuN00ECDBsziU"
 
-print("🔐 Stripe key length:", len(stripe.api_key))
+# 💡 Debug to confirm runtime key
 print("🔐 Stripe key preview:", stripe.api_key[:12])
+print("🔐 Stripe key length:", len(stripe.api_key))
 
 @app.route("/")
-def index():
-    return "✅ Home page"
-
-@app.route("/test")
-def test():
-    return "✅ This is the correct app.py"
+def home():
+    return "✅ TaxLabs app is running"
 
 @app.route("/checkout")
 def checkout():
     try:
-        print("⚙️ Creating Stripe Checkout session...")
+        print("⚙️ Creating Stripe session...")
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[{
                 "price_data": {
                     "currency": "usd",
                     "unit_amount": 500,
-                    "product_data": {"name": "PDF Download"},
+                    "product_data": {
+                        "name": "PDF Report"
+                    },
                 },
                 "quantity": 1,
             }],
@@ -47,11 +44,11 @@ def checkout():
 
 @app.route("/success")
 def success():
-    return "✅ Payment successful!"
+    return "✅ Payment was successful!"
 
 @app.route("/cancel")
 def cancel():
-    return "❌ Payment canceled."
+    return "❌ Payment was cancelled!"
 
 if __name__ == "__main__":
     app.run(debug=True)
