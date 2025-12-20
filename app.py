@@ -6,7 +6,10 @@ app = Flask(__name__)
 stripe.api_key = "sk_test_51SfuJ1GXW2HJur5PrLI492yZpSN5OVbmcJPF4HARJVLCuIcuAFBnDJzWx4ka5UVGzCIJDkElv0vI9XDa2efEpSuN00ECDBsziU"
 print("🔐 LIVE STRIPE KEY:", stripe.api_key)
 
-@app.route("/
+@app.route("/checkout")
+def checkout():
+    ...
+
 test")
 def test():
     return "✅ You are running the correct app.py"
