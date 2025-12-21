@@ -1,18 +1,22 @@
 from flask import Flask, redirect, url_for
 import os
 import stripe
-from dotenv import load_dotenv  # ✅ Load environment variables
+
+# ✅ Load .env explicitly
+from dotenv import load_dotenv
 load_dotenv()
 
 print("✅ app.py loaded")
 
 app = Flask(__name__)
 
-# Load Stripe key from env (local or Railway)
+# 🔐 Load Stripe key
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-print("🔐 Stripe key loaded:", bool(stripe.api_key))
 
-YOUR_PRICE = 300  # $3.00
+print("🔐 Stripe key loaded:", bool(stripe.api_key))
+print("🔐 Stripe key preview:", (stripe.api_key[:12] if stripe.api_key else "NONE"))
+
+YOUR_PRICE = 300  # $3.00 (in cents)
 
 @app.route("/")
 def index():
@@ -42,6 +46,7 @@ def checkout():
         )
         print("✅ Stripe session created:", session.id)
         return redirect(session.url, code=303)
+
     except Exception as e:
         print("🔥 STRIPE ERROR:", repr(e))
         return "Something went wrong during checkout.", 500
@@ -55,4 +60,4 @@ def cancel():
     return "❌ Payment cancelled."
 
 if __name__ == "__main__":
-    app.run(debug=True)  # ✅ Enable debug for local testing
+    app.run(debug=True)
