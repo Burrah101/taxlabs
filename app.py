@@ -1,15 +1,18 @@
-from flask import Flask, redirect, url_for, send_from_directory
+from flask import Flask, redirect, url_for
 import os
 import stripe
-from report_pdf import generate_pdf
+from dotenv import load_dotenv  # ✅ Load environment variables
+load_dotenv()
 
 print("✅ app.py loaded")
 
 app = Flask(__name__)
+
+# Load Stripe key from env (local or Railway)
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 print("🔐 Stripe key loaded:", bool(stripe.api_key))
 
-YOUR_PRICE = 300
+YOUR_PRICE = 300  # $3.00
 
 @app.route("/")
 def index():
@@ -39,24 +42,17 @@ def checkout():
         )
         print("✅ Stripe session created:", session.id)
         return redirect(session.url, code=303)
-
     except Exception as e:
         print("🔥 STRIPE ERROR:", repr(e))
         return "Something went wrong during checkout.", 500
 
 @app.route("/success")
 def success():
-    # This creates the PDF after payment
-    generate_pdf()
-    return redirect("/download")
-
-@app.route("/download")
-def download():
-    return send_from_directory("static", "report.pdf", as_attachment=True)
+    return "✅ Payment successful!"
 
 @app.route("/cancel")
 def cancel():
     return "❌ Payment cancelled."
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True)  # ✅ Enable debug for local testing
