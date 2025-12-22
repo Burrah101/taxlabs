@@ -1,73 +1,44 @@
-# app.py
-
-from flask import Flask, redirect, url_for, send_file
-import os
-import stripe
+from flask import Flask, redirect, request, send_file
 from dotenv import load_dotenv
-from report_pdf import generate_pdf
+import stripe
+import os
+from report_pdf import create_pdf  # this should return the path to the generated PDF
 
-print("✅ app.py loaded")
-
-# Load .env if present (for local development)
 load_dotenv()
 
 app = Flask(__name__)
 
-# Stripe key from env
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-print("🔐 Stripe key loaded:", bool(stripe.api_key))
 
-YOUR_PRICE = 300  # $3.00 in cents
-
-@app.route("/")
+@app.route('/')
 def index():
-    return "TaxLabs Home"
+    return '<h1>Welcome to TaxLabs.io</h1><a href="/pay">Pay Now</a>'
 
-@app.route("/test")
-def test():
-    return "✅ You are running the correct app.py"
-
-@app.route("/checkout")
-def checkout():
-    try:
-        print("⚙️ Creating Stripe Checkout session...")
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": "usd",
-                    "unit_amount": YOUR_PRICE,
-                    "product_data": {"name": "Tax Report PDF"},
+@app.route('/pay')
+def pay():
+    session = stripe.checkout.Session.create(
+        payment_method_types=['card'],
+        line_items=[{
+            'price_data': {
+                'currency': 'usd',
+                'unit_amount': 2000,  # $20.00
+                'product_data': {
+                    'name': 'Tax Report PDF',
                 },
-                "quantity": 1,
-            }],
-            mode="payment",
-            success_url=url_for("success", _external=True),
-            cancel_url=url_for("cancel", _external=True),
-        )
-        print("✅ Stripe session created:", session.id)
-        return redirect(session.url, code=303)
-    except Exception as e:
-        print("🔥 STRIPE ERROR:", repr(e))
-        return "Something went wrong during checkout.", 500
+            },
+            'quantity': 1,
+        }],
+        mode='payment',
+        success_url='http://localhost:5000/success',
+        cancel_url='http://localhost:5000/cancel',
+    )
+    return redirect(session.url, code=303)
 
-@app.route("/success")
+@app.route('/success')
 def success():
-    print("💰 Payment succeeded. Generating PDF...")
-    generate_pdf("static/report.pdf")
-    return redirect(url_for("download_pdf"))
+    pdf_path = create_pdf()  # Generate PDF after successful payment
+    return send_file(pdf_path, as_attachment=True, download_name="Tax_Report.pdf")
 
-@app.route("/download")
-def download_pdf():
-    try:
-        return send_file("static/report.pdf", as_attachment=True)
-    except Exception as e:
-        print("⚠️ PDF Download error:", repr(e))
-        return "File not found.", 404
-
-@app.route("/cancel")
+@app.route('/cancel')
 def cancel():
-    return "❌ Payment cancelled."
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    return "<h1>Payment cancelled.</h1>"
