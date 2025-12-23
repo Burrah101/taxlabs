@@ -2,7 +2,7 @@ from flask import Flask, redirect, request, send_file
 from dotenv import load_dotenv
 import stripe
 import os
-from report_pdf import create_pdf  # Make sure this function exists in report_pdf.py
+from report_pdf import generate_pdf  # ✅ Correct function name
 
 # Load environment variables from .env
 load_dotenv()
@@ -10,7 +10,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 
-# Set Stripe secret key
+# Set Stripe secret key from .env
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 # Home page
@@ -44,13 +44,13 @@ def pay():
         )
         return redirect(session.url, code=303)
     except Exception as e:
-        return f"Error creating Stripe session: {str(e)}"
+        return f"❌ Error creating Stripe session: {str(e)}"
 
 # Stripe success route → generate and send PDF
 @app.route('/success')
 def success():
     try:
-        pdf_path = create_pdf()  # From report_pdf.py
+        pdf_path = generate_pdf()  # ✅ Now correctly named
         return send_file(
             pdf_path,
             as_attachment=True,
@@ -58,13 +58,13 @@ def success():
             mimetype='application/pdf'
         )
     except Exception as e:
-        return f"Failed to generate PDF: {str(e)}"
+        return f"❌ Failed to generate PDF: {str(e)}"
 
 # Payment cancelled
 @app.route('/cancel')
 def cancel():
     return "<h2>Payment was cancelled. Please try again.</h2>"
 
-# Run the Flask server
+# Run the Flask server locally
 if __name__ == "__main__":
     app.run(debug=True)
