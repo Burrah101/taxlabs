@@ -2,7 +2,7 @@ from flask import Flask, redirect, request, send_file
 from dotenv import load_dotenv
 import stripe
 import os
-from report_pdf import generate_pdf  # ✅ Correct function name
+from report_pdf import generate_pdf  # Make sure this exists in report_pdf.py
 
 # Load environment variables from .env
 load_dotenv()
@@ -39,8 +39,8 @@ def pay():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url='http://localhost:5000/success',
-            cancel_url='http://localhost:5000/cancel',
+            success_url='https://taxlabs-production.up.railway.app/success',
+            cancel_url='https://taxlabs-production.up.railway.app/cancel',
         )
         return redirect(session.url, code=303)
     except Exception as e:
@@ -50,7 +50,8 @@ def pay():
 @app.route('/success')
 def success():
     try:
-        pdf_path = generate_pdf()  # ✅ Now correctly named
+        print("✅ PDF route triggered")  # For logs / debugging
+        pdf_path = generate_pdf()
         return send_file(
             pdf_path,
             as_attachment=True,
@@ -58,12 +59,13 @@ def success():
             mimetype='application/pdf'
         )
     except Exception as e:
+        print("❌ PDF generation failed:", e)
         return f"❌ Failed to generate PDF: {str(e)}"
 
 # Payment cancelled
 @app.route('/cancel')
 def cancel():
-    return "<h2>Payment was cancelled. Please try again.</h2>"
+    return "<h2>❌ Payment was cancelled. Please try again.</h2>"
 
 # Run the Flask server locally
 if __name__ == "__main__":
